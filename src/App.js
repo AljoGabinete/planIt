@@ -20,7 +20,7 @@ function App() {
   ]);
   return (
     <MonthProvider>
-      <RouterProvider router={router} />;
+      <RouterProvider router={router} />
     </MonthProvider>
   );
 }
