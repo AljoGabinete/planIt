@@ -4,7 +4,7 @@ import CurrWeather from '../components/CurrWeather';
 import WeatherForecast from '../components/WeatherForecast';
 
 function Dashboard() {
-  const [location, setLocation] = useState('Paranaque');
+  const [location, setLocation] = useState('Batangas');
   const [calEvents] = useState(() => {
     const storedEvents = localStorage.getItem('CalendarEvents');
     return storedEvents ? JSON.parse(storedEvents) : [];

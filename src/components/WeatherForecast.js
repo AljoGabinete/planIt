@@ -1,5 +1,5 @@
 import dayjs from 'dayjs';
-import React, { useEffect, useState } from 'react';
+import React, { useEffect, useState, useCallback } from 'react';
 
 const ApiKey = 'a25ec963031250d4387449d8ca4e3a7d';
 
@@ -7,32 +7,30 @@ function WeatherForecast({ location }) {
   const [forecast, setForecast] = useState();
   const [setError] = useState(null);
 
+  const getForecast = useCallback(async () => {
+    try {
+      const respone = await fetch(
+        `https://api.openweathermap.org/data/2.5/forecast?q=${location}&appid=${ApiKey}`
+      );
+      const data = await respone.json();
+      const filteredForecast = data.list
+        .filter((forecast) => {
+          const forecastTime = dayjs
+            .unix(forecast.dt + 28800)
+            .subtract(8, 'hour');
+          const currentTime = dayjs();
+          return forecastTime.isAfter(currentTime);
+        })
+        .slice(0, 12);
+      setForecast(filteredForecast);
+    } catch (error) {
+      setError('Error fetching weather Data');
+    }
+  }, [location, setError]);
+
   useEffect(() => {
-    const delayloading = setTimeout(() => {
-      const getForecast = async () => {
-        try {
-          const respone = await fetch(
-            `https://api.openweathermap.org/data/2.5/forecast?q=${location}&appid=${ApiKey}`
-          );
-          const data = await respone.json();
-          const filteredForecast = data.list
-            .filter((forecast) => {
-              const forecastTime = dayjs
-                .unix(forecast.dt + 28800)
-                .subtract(8, 'hour');
-              const currentTime = dayjs();
-              return forecastTime.isAfter(currentTime);
-            })
-            .slice(0, 12);
-          setForecast(filteredForecast);
-        } catch (error) {
-          setError('Error fetching weather Data');
-        }
-      };
-      getForecast();
-    }, 200);
-    return () => clearTimeout(delayloading);
-  }, [location]);
+    getForecast();
+  }, [location, getForecast]);
 
   return (
     <div className='forecast'>

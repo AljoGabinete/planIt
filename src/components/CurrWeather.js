@@ -1,4 +1,4 @@
-import React, { useEffect, useState } from 'react';
+import React, { useEffect, useState, useCallback } from 'react';
 import dayjs from 'dayjs';
 import { BsSearch, BsCheckLg } from 'react-icons/bs';
 
@@ -13,21 +13,25 @@ function CurrWeather({ location, setLocation }) {
   const [loading, setLoading] = useState(false);
   const [isInputShown, setIsInputShown] = useState(false);
 
-  const getCoor = async (location) => {
-    //Get Lat and Long of Location
-    try {
-      const respone = await fetch(
-        `http://api.openweathermap.org/geo/1.0/direct?q=${location}}&limit=5&appid=${ApiKey}`
-      );
-      const data = await respone.json();
-      setTime(dayjs().$d);
-      setLat(data[0].lat.toFixed(7));
-      setLong(data[0].lon.toFixed(7));
-    } catch (error) {
-      setError('Error fetching weather Data');
-    }
-  };
-  const getWeather = async () => {
+  const getCoor = useCallback(
+    async (location) => {
+      //Get Lat and Long of Location
+      try {
+        const respone = await fetch(
+          `http://api.openweathermap.org/geo/1.0/direct?q=${location}}&limit=5&appid=${ApiKey}`
+        );
+        const data = await respone.json();
+        setTime(dayjs().$d);
+        setLat(data[0].lat.toFixed(7));
+        setLong(data[0].lon.toFixed(7));
+      } catch (error) {
+        setError('Error fetching weather Data');
+      }
+    },
+    [setError]
+  );
+
+  const getWeather = useCallback(async () => {
     if (lat && long) {
       setLoading(true);
       try {
@@ -41,17 +45,19 @@ function CurrWeather({ location, setLocation }) {
       }
       setLoading(false);
     }
-  };
+  }, [lat, long, setError]);
 
   useEffect(() => {
-    getCoor(location);
     getWeather();
-  }, [location]);
+    getCoor(location);
+  }, [location, getCoor, getWeather]);
 
   const handleSubmit = (loc) => {
     getCoor(loc);
+    getWeather();
     setIsInputShown(false);
   };
+
   return (
     <div className='currWeather'>
       <div className='currWeatherInput'>
